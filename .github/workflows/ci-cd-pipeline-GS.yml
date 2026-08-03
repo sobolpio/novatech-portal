@@ -23,7 +23,7 @@ jobs:
           find . -name "*.html" -type f -print0 | xargs -0 htmlhint
 
       - name: Run validation tests
-        run: ./test/validate.sh
+        run: bash tests/validate.sh
 
       - name: Create deployment package
         run: |
