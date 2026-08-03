@@ -1,0 +1,9 @@
+{
+    "app_name": "NovaTech Client Portal",
+    "version": "1.0.0",
+    "environment": "production",
+    "features": {
+        "maintenance_banner": false,
+        "notifications": true
+    }
+}
