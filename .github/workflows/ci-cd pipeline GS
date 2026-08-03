@@ -1,0 +1,84 @@
+name: ci-cd pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: Build, Validate and Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install HTMLHint
+        run: npm install -g htmlhint
+
+      - name: Validate HTML files
+        run: |
+          find . -name "*.html" -type f -print0 | xargs -0 htmlhint
+
+      - name: Run validation tests
+        run: ./test/validate.sh
+
+      - name: Create deployment package
+        run: |
+          zip -r application.zip . \
+            -x ".git/*" \
+            -x ".github/*"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-package
+          path: application.zip
+          retention-days: 7
+
+  deploy-staging:
+    name: Deploy Staging
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    environment:
+      name: staging
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: application-package
+
+      - name: Fake deployment STAGING
+        run: |
+          echo "Deploying application to STAGING..."
+          ls -la
+          echo "Artifact downloaded successfully."
+          echo "Deployment completed."
+
+  deploy-production:
+    name: Deploy Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    # Manual approval enforced by GitHub Environment
+    # If the production environment has Required Reviewers configured in 
+    # Settings → Environments → production, GitHub will automatically pause 
+    # the job before executing any steps
+    environment:
+      name: production
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: application-package
+
+      - name: Fake deployment PROD
+        run: |
+          echo "Deploying application to PRODUCTION..."
+          ls -la
+          echo "Artifact downloaded successfully."
+          echo "Deployment completed."
